@@ -9,7 +9,8 @@ const memo2 = <T>(create: () => T, dep1: object, dep2: object): T => {
   return getCached(create, cache2, dep2)
 }
 
-const isPromise = (x: unknown): x is Promise<unknown> => x instanceof Promise
+const isPromiseLike = (x: unknown): x is PromiseLike<unknown> =>
+  typeof (x as any)?.then === 'function'
 
 const defaultFallback = () => undefined
 
@@ -56,7 +57,7 @@ export function unwrap<Value, Args extends unknown[], Result, PendingValue>(
           get(refreshAtom)
           const prev = get(promiseAndValueAtom) as PromiseAndValue | undefined
           const promise = get(anAtom)
-          if (!isPromise(promise)) {
+          if (!isPromiseLike(promise)) {
             return { v: promise as Awaited<Value> }
           }
           if (promise !== prev?.p) {
