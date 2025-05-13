@@ -5,8 +5,8 @@ const cache1 = new WeakMap()
 const memo1 = <T>(create: () => T, dep1: object): T =>
   (cache1.has(dep1) ? cache1 : cache1.set(dep1, create())).get(dep1)
 
-const isPromise = <Value>(x: unknown): x is Promise<Awaited<Value>> =>
-  x instanceof Promise
+const isPromiseLike = (x: unknown): x is PromiseLike<unknown> =>
+  typeof (x as any)?.then === 'function'
 
 export type Loadable<Value> =
   | { state: 'loading' }
@@ -36,7 +36,7 @@ export function loadable<Value>(anAtom: Atom<Value>): Atom<Loadable<Value>> {
         } catch (error) {
           return { state: 'hasError', error } as Loadable<Value>
         }
-        if (!isPromise<Value>(value)) {
+        if (!isPromiseLike(value)) {
           return { state: 'hasData', data: value } as Loadable<Value>
         }
         const promise = value
